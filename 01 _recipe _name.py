@@ -1,7 +1,9 @@
-# Get's recipe name and checks it is not blank
+# Get's recipe name and check it is not blank
 
 # Not Blank Function goes here
 def not_blank(question) :
+
+    
     print("hello")
     valid = False
     while not valid:
@@ -12,10 +14,9 @@ def not_blank(question) :
         else:
            return response
 
-
-# Main Routine goes here
+# Main Routine goes her
 
 recipe_name = not_blank( "what is the name? ")
-print("here is more code")
 
 print("you are making {}".format(recipe_name))
+
