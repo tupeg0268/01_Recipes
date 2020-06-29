@@ -8,7 +8,7 @@
 # functions go here
 
 # number checking function.
-def num_check(question)
+def num_check(question):
 
     error = "Please enter a number that is more than zero"
 

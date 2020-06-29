@@ -5,7 +5,7 @@ import re
 # *****Functions *****
 
 
-def not_blank(question ,error_msg ,num_ok):
+def not_blank(question, error_msg, num_ok):
     error = error_msg
 
     valid = False
@@ -16,16 +16,14 @@ def not_blank(question ,error_msg ,num_ok):
         if num_ok != "yes":
             # look at each character in string and if it's a number, complain
             for letter in response:
-                if letter.isdigit() == True:
-                    has_errors =" yes"
+                if letter.isdigit() ==True:
+                    has_errors = "yes"
                     break
 
         if response == "":
             print(error)
             continue
-        elif has_errors != "":
-            print(error)
-            continue
+
         else:
             return response
 
@@ -47,30 +45,30 @@ def num_check(question):
             except ValueError:
                 print(error)
 
-
 def get_sf():
     serving_size = num_check("what is the recipe serving size? ")
+    scale_factor = 0
 
     # Main Routine goes here
     doggy_sf = "yes"
     while doggy_sf == "yes":
 
-            desired_size = num_check("how many serving are needed?")
+        desired_size = num_check("how many serving are needed?")
 
-            scale_factor = desired_size / serving_size
+        scale_factor = desired_size / serving_size
 
-            if scale_factor > 0.25:
-                doggy_sf = input("warning: this scale factor is very small  and you"
-                                 " might struggle to accurately weigh the ingredient. \n "
-                                 "Do you want to fix this and make more servings ").lower()
-            elif scale_factor > 4:
-                doggy_sf = input("warning: this scale factor is quite large - you might  "
-                                 "have issues with mixing bowl space / oven space. "
-                                 "\nDo you want to fix this and make a smaller"
-                                 "bath? ").lower()
+        if scale_factor < 0.25:
+            doggy_sf = input("warning: this scale factor is very small  and you"
+                             " might struggle to accurately weigh the ingredient. \n "
+                             "Do you want to fix this and make more servings ").lower()
+        elif scale_factor > 4:
+            doggy_sf = input("warning: this scale factor is quite large - you might  "
+                             "have issues with mixing bowl space / oven space. "
+                             "\nDo you want to fix this and make a smaller"
+                             "bath? ").lower()
 
-            else:
-                doggy_sf = "no"
+        else:
+            doggy_sf = "no"
 
     return scale_factor
 
@@ -87,6 +85,7 @@ def get_all_ingredients():
         get_recipe_line = not_blank("Recipe Line :",
                                     "This can't be blank",
                                     "Yes")
+
         # Stop loopin if exit code is typed and there are more
         # than 2 ingredients...
         if get_recipe_line.lower() == "xxx" and len(all_ingredients) > 1:
@@ -107,6 +106,7 @@ def general_converter(how_much, lookup, dictionary, conversion_factor):
 
     if lookup in dictionary:
         mult_by = dictionary.get(lookup)
+        mult_by = float(mult_by)
         how_much = how_much * mult_by * conversion_factor
         converted = "yes"
 
@@ -118,7 +118,9 @@ def general_converter(how_much, lookup, dictionary, conversion_factor):
 
 def unit_checker(unit_tocheck):
 
-    # Abreviation lists
+    unit_checker = unit_tocheck
+
+    # Abbreviation lists
     teaspoon =["tsp", "teaspoon", "t" "teaspoons " ]
     tablespoon =["tbs","tablespoon","T" , "tbsp" "tablespoons"]
     ounce =["oz", "ounce", "fl oz", "ounces"]
@@ -132,6 +134,8 @@ def unit_checker(unit_tocheck):
 
     if unit_tocheck == "":
         return unit_tocheck
+    elif unit_tocheck.lower() in grams:
+        return "g"
     elif unit_tocheck == "T" or unit_tocheck.lower() in teaspoon:
         return "tbs"
     elif unit_tocheck.lower() in tablespoon:
@@ -164,7 +168,8 @@ unit_central ={
     "quarts": 946,
     "pound": 454,
     "litre": 1000,
-    "ml": 1
+    "ml": 1,
+    "g": 1
 }
 
 # ***** Generate food dictionary *****
@@ -185,52 +190,19 @@ for row in csv_groceries:
 
 # print(food_dictionary)
 
-# ***** Get items ect****
-
-keep_going = ""
-while keep_going == "":
-    amount = eval(input("how much"))
-    amount = float(amount)
-
-    # Get unit and change it to match dictionary
-    unit = unit_checker()
-    ingredients = input("ingredients: ")
-
-    # convert to mls if possible
-    amount =general_converter(amount, unit , unit_central, 1)
-    print(amount)
-
-    # if we convert to mls, try and convert to grams
-    if amount[1] == "yes":
-        amount_2 = general_converter(amount[0], ingredients , food_dictionary, 250)
-
-        # If the ingredients is in the list , convert it
-        if amount_2[1]== "yes":
-            print(amount_2)
-
-        # if the ingredients is in the list, leave the unit as ml.
-        else:print("unchanged")
-
-    # if the unit is not mls, leave the line unchanged
-    else:
-        print ("unchanged")
-# ***** Main Routine*****
-
-# set up Dictionaries
-
-# set up list to hold 'modernised' ingredients
+# set up lists to hold original and 'modernised'recipes
 modernised_recipe = []
 
 # Ask user for recipe name and check its not blank
-recipe_name = not_blank("What is the recipe name? ",
-                        "The recipe name can't be blank and can't contains numbers ",
+recipe_name = not_blank("What is the recipe name?",
+                        "The recipe can be blank and can't contains numbers ",
                         "no")
-# Ask user where the recipe is originlly from (num_ok)
+# Ask user where the recipe is originally from (num_ok)
 source = not_blank("where is the recipe from ",
                    "The recipe source can't be blank ,",
                    "yes")
 
-# Get serving sizes and scale factor
+# get serving sizes and scale factor
 scale_factor = get_sf()
 
 # Get amounts, unit and ingredients from user ...
@@ -253,20 +225,23 @@ for recipe_line in full_recipe:
         amount = mixed_num.replace(" ", "+")
         # Change the string into a decimal
         amount = eval(amount)
-        amount =amount * scale_factor
+        amount = amount * scale_factor
 
         # Get unit and ingredients...
         compile_regex = re.compile(mixed_regex)
         unit_ingredients = re.split(compile_regex,recipe_line)
-        unit_ingredients = (unit_ingredients[1]).strip() # remove extra white space
+        unit_ingredients = (unit_ingredients[1]).strip()  # remove extra white space
 
     else:
-        get_amount = recipe_line.split(" ",1)  # Split line at first space
+        get_amount = recipe_line.split(" ", 1)  # Split line at first space
 
         try:
-            get_amount = eval(get_amount[0]) # Convert amount to float if possible
+            # item has valid amount that is not a mixed fraction
+            amount = eval(get_amount[0])  # Convert amount to float if possible
             amount = amount * scale_factor
+
         except NameError:
+            # "pinch of salt" case (ie: item does not contain concrete amount)
             amount = get_amount[0]
             modernised_recipe.append(recipe_line)
             continue
@@ -274,7 +249,7 @@ for recipe_line in full_recipe:
         unit_ingredients = get_amount[1]
 
     # Get unit an ingredient...
-    get_unit = unit_ingredients.split(" ",1)  # Splits texts at first space
+    get_unit = unit_ingredients.split(" ", 1)  # Splits texts at first space
 
     num_space = recipe_line.count(" ")
     if num_space >1:
@@ -293,6 +268,7 @@ for recipe_line in full_recipe:
 
         # if we converted to mls try and convert to grams
         if amount[1] == "yes":
+            print("amount zero", amount[0])
             amount_2 = general_converter(amount[0],ingredients, food_dictionary, 250)
 
             # if the ingredient is in the list, convert it
@@ -304,15 +280,22 @@ for recipe_line in full_recipe:
                 modernised_recipe.append(":.0f} ML {}".format(amount[0], ingredients))
                 continue
 
-    else:
-        modernised_recipe.append("{} {} {}".format(amount, unit_ingredients))
-        continue
+        # If units is not mls, leave the lin unchanged
+        else:
+             modernised_recipe.append("{:.2f} {} {} ".format(amount, unit_ingredients,))
 
-    modernised_recipe.append("{} {} {} ".format(amount, unit, ingredients))
+    else:
+        # Item only has ingredients(no unit)
+        modernised_recipe.append("{:.2f} {}".format(amount, unit_ingredients))
+
 
 
 # put updated ingredients in list
 
 # Output ingredients list
+print()
+print("*********** scaled , modernised {} Ingredients....********".format(recipe_name))
+print("source: {}".format(source))
+print()
 for item in modernised_recipe:
     print(item)
